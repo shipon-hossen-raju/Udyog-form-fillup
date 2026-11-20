@@ -19,10 +19,11 @@ interface DraftsModalProps {
   onClose: () => void;
   drafts: SavedDraft[];
   currentFormData: UdyogFormData;
-  onLoadDraft: (draft: SavedDraft) => void;
+  onLoadDraft: (formData: UdyogFormData, title: string) => void;
   onSaveCurrentAsNewDraft: (title: string) => void;
   onDeleteDraft: (id: string) => void;
   onDuplicateDraft: (draft: SavedDraft) => void;
+  onNotify: (msg: string) => void;
 }
 
 export function DraftsModal({
@@ -60,7 +61,7 @@ export function DraftsModal({
     currentFormData.part2.businessType ||
     (currentFormData.part1.nameBn ? `${currentFormData.part1.nameBn}-এর ফর্ম` : 'নতুন উদ্যোগ ড্রাফট');
 
-  const handleCreateDraft = (e: React.FormEvent) => {
+  const handleCreateLocalDraft = (e: React.FormEvent) => {
     e.preventDefault();
     const title = newDraftTitle.trim() || defaultProposedTitle;
     onSaveCurrentAsNewDraft(title);
@@ -79,7 +80,7 @@ export function DraftsModal({
         <div className="drafts-modal-title-group">
           <FolderOpen size={22} className="text-bb-green" aria-hidden="true" />
           <h2 id="drafts-dialog-title" className="drafts-modal-title">
-            সংরক্ষিত ফর্মসমূহ (<span lang="en">LocalStorage Drafts</span>)
+            সংরক্ষিত ড্রাফটসমূহ (লোকালস্টোরেজ)
           </h2>
         </div>
         <button
@@ -93,12 +94,11 @@ export function DraftsModal({
       </div>
 
       <p className="drafts-modal-desc">
-        আপনার ব্রাউজারের <strong>LocalStorage</strong>-এ বর্তমানে{' '}
-        <strong>{toBengaliDigits(drafts.length)}টি ফর্ম সংরক্ষিত</strong> রয়েছে। আপনি যেকোনো সময়
-        ফর্ম লোড করতে পারেন, ডুপ্লিকেট করতে পারেন অথবা বর্তমান ফর্মটি নতুন নামে সেভ করতে পারেন।
+        আপনার ব্রাউজারের মেমোরিতে বর্তমানে{' '}
+        <strong>{toBengaliDigits(drafts.length)}টি ফর্ম ড্রাফট সংরক্ষিত</strong> রয়েছে। অফলাইনেও এটি সবসময় অক্ষত থাকে এবং কেবলমাত্র আপনার এই ডিভাইসেই দৃশ্যমান থাকে।
       </p>
 
-      {/* Save current form as new draft block */}
+      {/* Create New Draft Box */}
       <div className="new-draft-box">
         {!isSavingNew ? (
           <button
@@ -113,7 +113,7 @@ export function DraftsModal({
             <span>বর্তমান ফর্মটি নতুন ড্রাফট হিসেবে সেভ করুন</span>
           </button>
         ) : (
-          <form onSubmit={handleCreateDraft} className="new-draft-form">
+          <form onSubmit={handleCreateLocalDraft} className="new-draft-form">
             <div className="field-group">
               <label htmlFor="draft-title-input" className="field-label">
                 ড্রাফটের নাম বা শিরোনাম দিন:
@@ -145,7 +145,7 @@ export function DraftsModal({
         )}
       </div>
 
-      {/* Drafts list */}
+      {/* Local Drafts List */}
       <div className="drafts-list-container">
         {drafts.length === 0 ? (
           <div className="drafts-empty-state">
@@ -161,11 +161,16 @@ export function DraftsModal({
                     <h3 className="draft-title">{draft.title}</h3>
                   </div>
                   <div className="draft-sub-details">
-                    <span>আবেদনকারী: <strong>{draft.applicantName || '—'}</strong></span>
+                    <span>
+                      আবেদনকারী: <strong>{draft.applicantName || '—'}</strong>
+                    </span>
                     <span>•</span>
                     <span>উদ্যোগ: {draft.businessName || '—'}</span>
                     <span>•</span>
-                    <span>চাহিত অর্থায়ন: <strong>{draft.requestedAmount ? `${draft.requestedAmount} টাকা` : '—'}</strong></span>
+                    <span>
+                      অর্থায়ন:{' '}
+                      <strong>{draft.requestedAmount ? `${draft.requestedAmount} টাকা` : '—'}</strong>
+                    </span>
                     <span>•</span>
                     <span className="draft-time">আপডেট: {formatTimeBn(draft.updatedAt)}</span>
                   </div>
@@ -176,13 +181,13 @@ export function DraftsModal({
                     type="button"
                     className="btn-load-draft"
                     onClick={() => {
-                      onLoadDraft(draft);
+                      onLoadDraft(draft.formData, draft.title);
                       onClose();
                     }}
                     title="এই ফর্মটি এডিটরে লোড করুন"
                   >
                     <Check size={16} aria-hidden="true" />
-                    <span>লোড করুন</span>
+                    <span>লোড</span>
                   </button>
 
                   <button

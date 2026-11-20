@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@fontsource/noto-sans-bengali": "^5.2.5",
+    "@prisma/client": "6.4.1",
     "html-to-image": "^1.11.13",
     "jspdf": "^3.0.1",
     "lucide-react": "^0.475.0",
@@ -20,6 +21,7 @@
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "prisma": "6.4.1",
     "typescript": "^5.7.3"
   }
 }

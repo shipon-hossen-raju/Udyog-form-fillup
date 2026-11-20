@@ -27,13 +27,25 @@
 
 html,
 body {
+  height: 100%;
+  height: 100dvh;
   margin: 0;
   padding: 0;
+  overflow: hidden;
   font-family: var(--font-bn);
   color: var(--text-main);
   background: var(--bg-page);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+}
+
+.app-root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--bg-page);
 }
 
 /* Visually hidden utility (accessible skip links & table captions) */
@@ -70,18 +82,17 @@ body {
 
 /* ==================== TOP BAR ==================== */
 .app-topbar {
-  position: sticky;
-  top: 0;
+  flex-shrink: 0;
   z-index: 40;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 10px 18px;
+  gap: 10px;
+  padding: 8px 16px;
   background: #ffffff;
   border-bottom: 1px solid var(--border-subtle);
-  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
 }
 
 .topbar-brand {
@@ -340,46 +351,63 @@ body {
 
 /* ==================== WORKSPACE LAYOUT ==================== */
 .workspace-main {
-  display: grid;
-  min-height: calc(100vh - 64px);
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
 }
 
 .workspace-main.mode-split {
-  grid-template-columns: minmax(420px, 1fr) minmax(440px, 1.05fr);
+  display: grid;
+  grid-template-columns: minmax(420px, 1fr) minmax(440px, 1.12fr);
+  grid-template-rows: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .workspace-main.mode-editor {
-  grid-template-columns: 1fr;
+  display: block;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .workspace-main.mode-preview {
-  grid-template-columns: 1fr;
+  display: block;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .editor-pane {
-  padding: 18px;
+  height: 100%;
+  min-height: 0;
   overflow-y: auto;
-  max-height: calc(100vh - 64px);
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-page);
 }
 
 .workspace-main.mode-editor .editor-pane {
-  max-height: none;
-  max-width: 900px;
+  max-width: 920px;
   width: 100%;
   margin-inline: auto;
 }
 
 .preview-pane {
-  background: #cbd5e1;
-  border-inline-start: 1px solid #94a3b8;
+  height: 100%;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  max-height: calc(100vh - 64px);
+  overflow: hidden;
+  background: #334155;
+  border-inline-start: 1px solid #1e293b;
 }
 
 .workspace-main.mode-preview .preview-pane {
   border-inline-start: 0;
-  max-height: none;
 }
 
 /* Offscreen container when in editor-only mode so PDF export & print still work */
@@ -388,6 +416,8 @@ body {
   left: -99999px;
   top: 0;
   width: 220mm;
+  height: auto;
+  min-height: 0;
   max-height: none;
   overflow: visible;
   pointer-events: none;
@@ -395,14 +425,16 @@ body {
 }
 
 .preview-toolbar {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
   padding: 8px 14px;
-  background: #334155;
+  background: #1e293b;
   color: #f8fafc;
   font-size: 0.82rem;
+  border-bottom: 1px solid #0f172a;
 }
 
 .zoom-controls {
@@ -436,10 +468,12 @@ body {
 
 .preview-scroll-area {
   flex: 1;
+  min-height: 0;
   overflow: auto;
-  padding: 18px 14px 36px;
+  padding: 16px 12px 32px;
   display: flex;
   justify-content: center;
+  background: #334155;
 }
 
 /* ==================== FORM EDITOR ==================== */
@@ -447,6 +481,8 @@ body {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  min-height: 100%;
+  flex: 1;
 }
 
 .step-nav {
@@ -507,6 +543,9 @@ body {
 }
 
 .editor-form {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
@@ -533,6 +572,7 @@ body {
 }
 
 .form-section-stack {
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -865,7 +905,7 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-top: 24px;
+  margin-top: auto;
   padding-top: 16px;
   border-top: 1px solid #e2e8f0;
 }
@@ -1012,6 +1052,175 @@ body {
   color: var(--text-muted);
   margin: 0 0 16px;
   line-height: 1.5;
+}
+
+/* Tab Switcher inside Modal */
+.drafts-tab-switcher {
+  display: flex;
+  background: #f1f5f9;
+  padding: 4px;
+  border-radius: var(--radius-md);
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.draft-tab-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  background: transparent;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s ease;
+}
+
+.draft-tab-btn.is-active {
+  background: #ffffff;
+  color: var(--bb-green);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1);
+}
+
+.tab-dot-online {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  display: inline-block;
+}
+
+/* Mongo Status Card */
+.mongo-status-card {
+  background: #f8fafc;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+
+.mongo-status-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.mongo-status-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.92rem;
+}
+
+.mongo-status-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.mongo-status-indicator.is-online {
+  background: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+
+.mongo-status-indicator.is-offline {
+  background: #f59e0b;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+}
+
+.mongo-status-sub {
+  margin: 6px 0 0;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.mongo-help-box {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+}
+
+.mongo-help-box p {
+  margin: 4px 0 6px;
+}
+
+.mongo-help-box code {
+  display: block;
+  padding: 6px 8px;
+  background: #0f172a;
+  color: #38bdf8;
+  border-radius: 4px;
+  font-size: 0.78rem;
+  overflow-x: auto;
+}
+
+.btn-mongo-accent {
+  background: #022c22 !important;
+  color: #6ee7b7 !important;
+  border-color: #059669 !important;
+}
+
+.btn-mongo-accent:hover {
+  background: #064e3b !important;
+  color: #ffffff !important;
+}
+
+.draft-badge-mongo {
+  background: #ecfdf5 !important;
+  color: #047857 !important;
+  border: 1px solid #a7f3d0;
+}
+
+.mongo-pill-tag {
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: #ecfdf5;
+  color: #047857;
+  padding: 2px 7px;
+  border-radius: 9999px;
+  border: 1px solid #a7f3d0;
+}
+
+.btn-ghost-sm {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 9px;
+  border-radius: var(--radius-sm);
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+
+.btn-ghost-sm:hover:not(:disabled) {
+  background: #f1f5f9;
+  color: var(--text-main);
+}
+
+.drafts-loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 36px 16px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
 }
 
 .new-draft-box {
@@ -1637,19 +1846,32 @@ body {
 }
 
 /* ==================== RESPONSIVE ==================== */
-@media (max-width: 1120px) {
+@media (max-width: 880px) {
+  html,
+  body,
+  .app-root {
+    height: auto;
+    min-height: 100%;
+    overflow-y: auto;
+  }
+
   .workspace-main.mode-split {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    overflow: visible;
   }
 
-  .editor-pane,
-  .preview-pane {
+  .editor-pane {
+    height: auto;
     max-height: none;
+    overflow: visible;
   }
 
   .preview-pane {
+    height: 720px;
     border-inline-start: 0;
-    border-top: 1px solid #94a3b8;
+    border-top: 1px solid #1e293b;
   }
 
   .hide-md {

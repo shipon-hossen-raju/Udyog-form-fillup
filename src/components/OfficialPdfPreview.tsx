@@ -3,6 +3,8 @@
 import { forwardRef } from 'react';
 import { UdyogFormData } from '../types/form';
 import {
+  DEFAULT_BUDGET_ROWS,
+  EMPTY_FORM_DATA,
   calculateAgeAsOfDeadline,
   formatIsoDateBn,
   formatTakaBn,
@@ -16,8 +18,9 @@ interface OfficialPdfPreviewProps {
   zoom?: number;
 }
 
-function splitChars(value: string, count: number): string[] {
-  const bn = toBengaliDigits(value.replace(/\s+/g, ''));
+function splitChars(value: unknown, count: number): string[] {
+  const safeStr = typeof value === 'string' ? value : value != null ? String(value) : '';
+  const bn = toBengaliDigits(safeStr.replace(/\s+/g, ''));
   const chars = Array.from(bn);
   return Array.from({ length: count }, (_, idx) => chars[idx] ?? '');
 }
@@ -34,7 +37,40 @@ function PageFooter({ pageNumber }: { pageNumber: number }) {
 }
 
 export const OfficialPdfPreview = forwardRef<HTMLDivElement, OfficialPdfPreviewProps>(
-  function OfficialPdfPreview({ data, zoom = 1 }, ref) {
+  function OfficialPdfPreview({ data: rawData, zoom = 1 }, ref) {
+    const data: UdyogFormData = {
+      ...EMPTY_FORM_DATA,
+      ...rawData,
+      office: { ...EMPTY_FORM_DATA.office, ...rawData?.office },
+      part1: {
+        ...EMPTY_FORM_DATA.part1,
+        ...rawData?.part1,
+        presentAddress: { ...EMPTY_FORM_DATA.part1.presentAddress, ...rawData?.part1?.presentAddress },
+        permanentAddress: { ...EMPTY_FORM_DATA.part1.permanentAddress, ...rawData?.part1?.permanentAddress },
+      },
+      part2: {
+        ...EMPTY_FORM_DATA.part2,
+        ...rawData?.part2,
+        projectedSales: { ...EMPTY_FORM_DATA.part2.projectedSales, ...rawData?.part2?.projectedSales },
+        projectedProfit: { ...EMPTY_FORM_DATA.part2.projectedProfit, ...rawData?.part2?.projectedProfit },
+      },
+      part3: {
+        ...EMPTY_FORM_DATA.part3,
+        ...rawData?.part3,
+        sales: { ...EMPTY_FORM_DATA.part3.sales, ...rawData?.part3?.sales },
+        profit: { ...EMPTY_FORM_DATA.part3.profit, ...rawData?.part3?.profit },
+      },
+      part4: {
+        ...EMPTY_FORM_DATA.part4,
+        ...rawData?.part4,
+        budgetRows:
+          Array.isArray(rawData?.part4?.budgetRows) && rawData.part4.budgetRows.length > 0
+            ? rawData.part4.budgetRows
+            : DEFAULT_BUDGET_ROWS,
+      },
+      part5: { ...EMPTY_FORM_DATA.part5, ...rawData?.part5 },
+    };
+
     const trackingChars = splitChars(data.office.trackingNumber, 8);
     const dayChars = splitChars(data.office.receiveDay, 2);
     const monthChars = splitChars(data.office.receiveMonth, 2);
@@ -43,7 +79,7 @@ export const OfficialPdfPreview = forwardRef<HTMLDivElement, OfficialPdfPreviewP
     const ageCalc = calculateAgeAsOfDeadline(data.part1.dob);
     const dobAndAgeText = (() => {
       const dobBn = formatIsoDateBn(data.part1.dob);
-      const ageText = data.part1.ageOverride.trim() || (ageCalc ? ageCalc.formattedBn : '');
+      const ageText = (data.part1.ageOverride || '').trim() || (ageCalc ? ageCalc.formattedBn : '');
       if (dobBn && ageText) return `জন্ম তারিখ: ${dobBn} | বয়স: ${ageText}`;
       if (dobBn) return `জন্ম তারিখ: ${dobBn}`;
       return ageText;

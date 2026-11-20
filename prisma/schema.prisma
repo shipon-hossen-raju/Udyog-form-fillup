@@ -1,0 +1,22 @@
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model ApplicationForm {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  title           String   @default("উদ্যোগ আবেদন ফরম")
+  applicantName   String   @default("")
+  businessName    String   @default("")
+  requestedAmount String   @default("")
+  status          String   @default("draft")
+  formData        Json
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("application_forms")
+}

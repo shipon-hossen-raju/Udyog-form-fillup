@@ -27,12 +27,13 @@ import { FormEditor } from './FormEditor';
 import { OfficialPdfPreview } from './OfficialPdfPreview';
 import { DraftsModal } from './DraftsModal';
 import { exportOfficialFormPdf } from '../utils/pdfExport';
+import { fetchSingleMongoApplication, recordFormSubmission } from '../utils/api';
 
 export function UdyogApp() {
   const [formData, setFormData] = useState<UdyogFormData>(EMPTY_FORM_DATA);
   const [activeStep, setActiveStep] = useState<FormStepId>('part1');
   const [viewMode, setViewMode] = useState<ViewMode>('split');
-  const [previewZoom, setPreviewZoom] = useState<number>(0.72);
+  const [previewZoom, setPreviewZoom] = useState<number>(0.6);
   const [isExporting, setIsExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState('');
   const [statusMessage, setStatusMessage] = useState('');
@@ -73,6 +74,20 @@ export function UdyogApp() {
 
       const allDrafts = getSavedDrafts();
       setDrafts(allDrafts);
+
+      // Check if URL has ?loadMongoId=xxx (from Admin Dashboard)
+      if (typeof window !== 'undefined') {
+        const urlParams = new URLSearchParams(window.location.search);
+        const mongoId = urlParams.get('loadMongoId');
+        if (mongoId) {
+          fetchSingleMongoApplication(mongoId).then((res) => {
+            if (res.success && res.data?.formData) {
+              setFormData(res.data.formData);
+              announce(`অ্যাডমিন ডাটাবেজ থেকে "${res.data.applicantName || 'আবেদন'}" লোড করা হয়েছে।`);
+            }
+          });
+        }
+      }
     } catch (err) {
       console.error('Error hydrating from localStorage:', err);
     } finally {
@@ -115,8 +130,8 @@ export function UdyogApp() {
     saveActiveViewMode(mode);
     if (mode === 'preview' && previewZoom < 0.85) {
       setPreviewZoom(0.95);
-    } else if (mode === 'split' && previewZoom > 0.85) {
-      setPreviewZoom(0.72);
+    } else if (mode === 'split' && previewZoom > 0.8) {
+      setPreviewZoom(0.6);
     }
   };
 
@@ -198,6 +213,12 @@ export function UdyogApp() {
     if (!previewRef.current || isExporting) return;
     setIsExporting(true);
     setExportProgress('পৃষ্ঠা প্রস্তুত হচ্ছে...');
+
+    // Automatically record submission in MongoDB in the background
+    recordFormSubmission(formData, 'pdf_download').catch((err) => {
+      console.warn('MongoDB submission logging skipped:', err);
+    });
+
     try {
       const safeName = formData.part1.nameEn
         ? `UDYOG-${formData.part1.nameEn.replace(/[^A-Z0-9]+/gi, '-')}.pdf`
@@ -210,7 +231,7 @@ export function UdyogApp() {
           setExportProgress(`পৃষ্ঠা ${toBengaliDigits(curr)}/${toBengaliDigits(total)}...`);
         },
       });
-      announce('৭ পৃষ্ঠার PDF সফলভাবে ডাউনলোড হয়েছে।');
+      announce('৭ পৃষ্ঠার PDF সফলভাবে ডাউনলোড হয়েছে এবং সিস্টেমে লিপিবদ্ধ করা হয়েছে।');
     } catch (err) {
       console.error(err);
       announce('PDF ডাউনলোডে সমস্যা হয়েছে। অনুগ্রহ করে "প্রিন্ট / ভেক্টর PDF" ব্যবহার করুন।');
@@ -221,6 +242,10 @@ export function UdyogApp() {
   };
 
   const handlePrint = () => {
+    // Automatically record submission in MongoDB in the background
+    recordFormSubmission(formData, 'print').catch((err) => {
+      console.warn('MongoDB submission logging skipped:', err);
+    });
     window.print();
   };
 
@@ -348,10 +373,16 @@ export function UdyogApp() {
         onClose={() => setIsDraftsModalOpen(false)}
         drafts={drafts}
         currentFormData={formData}
-        onLoadDraft={handleLoadDraft}
+        onLoadDraft={(loadedData, title) => {
+          setFormData(loadedData);
+          saveActiveForm(loadedData);
+          setLastSavedTime(new Date().toISOString());
+          announce(`"${title}" সফলভাবে এডিটরে লোড করা হয়েছে।`);
+        }}
         onSaveCurrentAsNewDraft={handleSaveCurrentAsNewDraft}
         onDeleteDraft={handleDeleteDraft}
         onDuplicateDraft={handleDuplicateDraft}
+        onNotify={announce}
       />
 
       {/* Native accessible confirmation dialog */}
