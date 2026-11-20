@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { UdyogFormData } from '@/types/form';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     if (!process.env.DATABASE_URL || process.env.DATABASE_URL.includes('username:password')) {

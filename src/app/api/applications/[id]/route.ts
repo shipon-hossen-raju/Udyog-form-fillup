@@ -2,12 +2,21 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { UdyogFormData } from '@/types/form';
 
+export const dynamic = 'force-dynamic';
+
 interface RouteContext {
   params: Promise<{ id: string }>;
 }
 
 export async function GET(_request: Request, context: RouteContext) {
   try {
+    if (!process.env.DATABASE_URL || process.env.DATABASE_URL.includes('username:password')) {
+      return NextResponse.json(
+        { success: false, connected: false, message: 'DATABASE_URL কনফিগার করা হয়নি।' },
+        { status: 503 }
+      );
+    }
+
     const { id } = await context.params;
 
     const record = await prisma.applicationForm.findUnique({
@@ -33,6 +42,13 @@ export async function GET(_request: Request, context: RouteContext) {
 
 export async function PUT(request: Request, context: RouteContext) {
   try {
+    if (!process.env.DATABASE_URL || process.env.DATABASE_URL.includes('username:password')) {
+      return NextResponse.json(
+        { success: false, connected: false, message: 'DATABASE_URL কনফিগার করা হয়নি।' },
+        { status: 503 }
+      );
+    }
+
     const { id } = await context.params;
     const body = await request.json();
     const formData = body.formData as UdyogFormData;
@@ -71,6 +87,13 @@ export async function PUT(request: Request, context: RouteContext) {
 
 export async function DELETE(_request: Request, context: RouteContext) {
   try {
+    if (!process.env.DATABASE_URL || process.env.DATABASE_URL.includes('username:password')) {
+      return NextResponse.json(
+        { success: false, connected: false, message: 'DATABASE_URL কনফিগার করা হয়নি।' },
+        { status: 503 }
+      );
+    }
+
     const { id } = await context.params;
 
     await prisma.applicationForm.delete({
