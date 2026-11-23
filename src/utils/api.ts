@@ -1,4 +1,5 @@
 import { UdyogFormData } from '../types/form';
+import { detectTrafficSource } from './traffic';
 
 export interface MongoApplicationItem {
   id: string;
@@ -10,6 +11,35 @@ export interface MongoApplicationItem {
   createdAt: string;
   updatedAt: string;
   formData: UdyogFormData;
+}
+
+const SUBMISSION_ID_KEY = 'udyog_last_mongo_submission_id';
+
+export function getStoredSubmissionId(): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    return localStorage.getItem(SUBMISSION_ID_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function setStoredSubmissionId(id: string): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(SUBMISSION_ID_KEY, id);
+  } catch {
+    // Ignore storage quota
+  }
+}
+
+export function clearStoredSubmissionId(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.removeItem(SUBMISSION_ID_KEY);
+  } catch {
+    // Ignore
+  }
 }
 
 export async function checkDbHealth(): Promise<{
@@ -68,22 +98,34 @@ export async function saveMongoApplication(
   formData: UdyogFormData,
   id?: string,
   status: string = 'draft'
-): Promise<{ success: boolean; message: string; data?: MongoApplicationItem }> {
+): Promise<{
+  success: boolean;
+  message: string;
+  isUpdated?: boolean;
+  data?: MongoApplicationItem;
+}> {
   try {
-    const isUpdate = Boolean(id);
-    const url = isUpdate ? `/api/applications/${id}` : '/api/applications';
-    const method = isUpdate ? 'PUT' : 'POST';
+    const submissionId = id || getStoredSubmissionId() || undefined;
+    const isExplicitPut = Boolean(id);
+    const url = isExplicitPut ? `/api/applications/${id}` : '/api/applications';
+    const method = isExplicitPut ? 'PUT' : 'POST';
+
+    const traffic = detectTrafficSource();
 
     const res = await fetch(url, {
       method,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, formData, status }),
+      body: JSON.stringify({ id: submissionId, title, formData, status, traffic }),
     });
 
     const result = await res.json();
+    if (result.success && result.data?.id) {
+      setStoredSubmissionId(result.data.id);
+    }
     return {
       success: res.ok && result.success,
       message: result.message || (res.ok ? 'সফলভাবে সংরক্ষিত হয়েছে' : 'সেভ ব্যর্থ হয়েছে'),
+      isUpdated: result.isUpdated,
       data: result.data,
     };
   } catch (error) {
@@ -94,25 +136,59 @@ export async function saveMongoApplication(
   }
 }
 
+let isSubmittingLock = false;
+
 export async function recordFormSubmission(
   formData: UdyogFormData,
   actionType: 'pdf_download' | 'print' | 'draft' = 'pdf_download'
 ): Promise<{ success: boolean; message: string; data?: MongoApplicationItem }> {
-  const applicantName = formData.part1.nameBn || formData.part1.nameEn || 'নামহীন আবেদনকারী';
-  const businessName =
-    formData.part3.businessName ||
-    formData.part2.businessTypeDetails ||
-    formData.part2.businessType ||
-    'উদ্যোগ প্রস্তাবনা';
-  const title = `${applicantName} — ${businessName}`;
-  const status =
-    actionType === 'pdf_download'
-      ? 'pdf_generated'
-      : actionType === 'print'
-      ? 'printed'
-      : 'draft';
+  if (isSubmittingLock) {
+    return { success: true, message: 'আবেদনটি ইতোমধ্যে প্রসেস হচ্ছে...' };
+  }
+  isSubmittingLock = true;
 
-  return await saveMongoApplication(title, formData, undefined, status);
+  try {
+    const applicantName =
+      formData.part1.nameBn || formData.part1.nameEn || 'নামহীন আবেদনকারী';
+    const businessName =
+      formData.part3.businessName ||
+      formData.part2.businessTypeDetails ||
+      formData.part2.businessType ||
+      'উদ্যোগ প্রস্তাবনা';
+    const title = `${applicantName} — ${businessName}`;
+    const status =
+      actionType === 'pdf_download'
+        ? 'pdf_generated'
+        : actionType === 'print'
+        ? 'printed'
+        : 'draft';
+
+    const existingId = getStoredSubmissionId() || undefined;
+    const res = await saveMongoApplication(title, formData, existingId, status);
+    return res;
+  } finally {
+    isSubmittingLock = false;
+  }
+}
+
+export async function deduplicateMongoApplications(): Promise<{
+  success: boolean;
+  message: string;
+  removedCount?: number;
+  remainingCount?: number;
+}> {
+  try {
+    const res = await fetch('/api/applications/deduplicate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    return await res.json();
+  } catch (error) {
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'নেটওয়ার্ক এরর',
+    };
+  }
 }
 
 export async function deleteMongoApplication(id: string): Promise<{

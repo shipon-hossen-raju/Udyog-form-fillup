@@ -31,7 +31,6 @@ body {
   height: 100dvh;
   margin: 0;
   padding: 0;
-  overflow: hidden;
   font-family: var(--font-bn);
   color: var(--text-main);
   background: var(--bg-page);
@@ -39,10 +38,23 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Strictly lock viewport on the main workspace so that the window never scrolls and has 0 white space */
+html:not(:has(.admin-layout)),
+body:not(:has(.admin-layout)) {
+  overflow: hidden !important;
+  height: 100% !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+}
+
+dialog:not([open]) {
+  display: none !important;
+}
+
 .app-root {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: 100vh;
   height: 100dvh;
   overflow: hidden;
   background: var(--bg-page);
@@ -1962,4 +1974,393 @@ body {
     break-after: auto;
     page-break-after: auto;
   }
+}
+
+/* ==================== DEVELOPER BADGE & MODAL ==================== */
+.btn-developer-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 11px;
+  border-radius: var(--radius-sm);
+  background: #f1f5f9;
+  color: #334155;
+  border: 1.5px solid #cbd5e1;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-developer-badge:hover {
+  background: #e2e8f0;
+  color: #0e4b28;
+  border-color: #86efac;
+}
+
+.developer-dialog {
+  border: none;
+  border-radius: 16px;
+  padding: 0;
+  max-width: 480px;
+  width: 92%;
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.3);
+  background: transparent;
+  color: #0f172a;
+}
+
+.developer-dialog::backdrop {
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+}
+
+.dev-modal-card {
+  background: #ffffff;
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e2e8f0;
+}
+
+.dev-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 14px;
+  background: linear-gradient(135deg, #09351c 0%, #0e4b28 100%);
+  color: #ffffff;
+}
+
+.dev-modal-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.dev-modal-header .btn-close-modal {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+  border: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.dev-modal-header .btn-close-modal:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.dev-modal-body {
+  padding: 22px 20px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.dev-avatar-wrapper {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.dev-avatar-ring {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  padding: 3px;
+  background: linear-gradient(135deg, #0e4b28, #34d399, #d97706);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dev-avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #ffffff;
+}
+
+.dev-avatar-fallback {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: #e2e8f0;
+  color: #0e4b28;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dev-online-dot {
+  position: absolute;
+  bottom: 2px;
+  right: 4px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #10b981;
+  border: 2.5px solid #ffffff;
+}
+
+.dev-identity {
+  margin-bottom: 10px;
+}
+
+.dev-name {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #0e4b28;
+}
+
+.dev-name-en {
+  margin: 2px 0 6px;
+  font-size: 0.92rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.dev-role-badge {
+  display: inline-block;
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+  padding: 3px 12px;
+  border-radius: 9999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.dev-bio {
+  font-size: 0.86rem;
+  line-height: 1.55;
+  color: #334155;
+  margin: 0 0 16px;
+  background: #f8fafc;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.dev-contact-prompt {
+  background: #f0fdf4;
+  border: 1.5px solid #a7f3d0;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  width: 100%;
+  text-align: left;
+}
+
+.dev-contact-prompt-header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #0e4b28;
+  font-size: 0.88rem;
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+
+.dev-contact-prompt p {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: #164e31;
+}
+
+.dev-links-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.dev-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-family: inherit;
+  transition: all 0.15s ease;
+  border: 1px solid;
+}
+
+.dev-btn-text {
+  flex: 1;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+}
+
+.dev-btn-text strong {
+  font-size: 0.88rem;
+}
+
+.dev-btn-text span {
+  font-size: 0.74rem;
+  opacity: 0.85;
+}
+
+.dev-ext-icon {
+  opacity: 0.6;
+}
+
+.dev-btn-portfolio {
+  background: #f0fdf4;
+  color: #0e4b28;
+  border-color: #86efac;
+}
+
+.dev-btn-portfolio:hover {
+  background: #dcfce7;
+  border-color: #0e4b28;
+  transform: translateY(-1px);
+}
+
+.dev-btn-whatsapp {
+  background: #f0fdf4;
+  color: #15803d;
+  border-color: #86efac;
+}
+
+.dev-btn-whatsapp:hover {
+  background: #dcfce7;
+  border-color: #16a34a;
+  color: #14532d;
+  transform: translateY(-1px);
+}
+
+.dev-btn-facebook {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+}
+
+.dev-btn-facebook:hover {
+  background: #dbeafe;
+  border-color: #2563eb;
+  color: #1e40af;
+  transform: translateY(-1px);
+}
+
+.dev-btn-github {
+  background: #f8fafc;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+.dev-btn-github:hover {
+  background: #f1f5f9;
+  border-color: #64748b;
+  transform: translateY(-1px);
+}
+
+.dev-btn-email {
+  background: #fffbeb;
+  color: #92400e;
+  border-color: #fde68a;
+}
+
+.dev-btn-email:hover {
+  background: #fef3c7;
+  border-color: #d97706;
+  transform: translateY(-1px);
+}
+
+.dev-tech-stack {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding-top: 10px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.dev-tech-title {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.dev-tags-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.tech-tag {
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+}
+
+.dev-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 20px;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+}
+
+.dev-footer-note {
+  margin: 0;
+  font-size: 0.76rem;
+  color: #64748b;
+  text-align: left;
+}
+
+/* Developer credit footer at bottom of Form */
+.developer-footer-credit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: #64748b;
+  padding: 18px 12px 6px;
+  margin-top: 24px;
+  border-top: 1px solid #e2e8f0;
+  flex-wrap: wrap;
+}
+
+.dev-credit-separator {
+  color: #cbd5e1;
+}
+
+.dev-credit-link {
+  color: #0e4b28;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.15s ease;
+}
+
+.dev-credit-link:hover {
+  color: #09351c;
 }

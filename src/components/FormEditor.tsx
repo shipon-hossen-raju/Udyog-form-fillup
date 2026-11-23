@@ -2182,6 +2182,53 @@ export function FormEditor({ data, activeStep, onStepChange, onChange }: FormEdi
           )}
         </div>
       </form>
+
+      {/* Developer Portfolio Footer Credit */}
+      <footer className="developer-footer-credit no-print">
+        <span>
+          ডিজাইন ও ডেভেলপমেন্টে: <strong>শিপন হোসাইন রাজু (Shipon Hossain Raju)</strong> — Software Engineer
+        </span>
+        <span className="dev-credit-separator" aria-hidden="true">•</span>
+        <a
+          href="https://developershipon.vercel.app/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="dev-credit-link"
+          title="শিপন হোসাইন রাজুর অফিসিয়াল পোর্টফোলিও দেখুন"
+        >
+          পোর্টফোলিও
+        </a>
+        <span className="dev-credit-separator" aria-hidden="true">•</span>
+        <a
+          href="https://wa.me/8801310861071"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="dev-credit-link"
+          title="হোয়াটসঅ্যাপে সরাসরি মেসেজ পাঠান"
+        >
+          WhatsApp
+        </a>
+        <span className="dev-credit-separator" aria-hidden="true">•</span>
+        <a
+          href="https://www.facebook.com/ShiponHossenRaju"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="dev-credit-link"
+          title="ফেসবুকে যোগাযোগ করুন"
+        >
+          Facebook
+        </a>
+        <span className="dev-credit-separator" aria-hidden="true">•</span>
+        <a
+          href="https://github.com/shipon-hossen-raju"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="dev-credit-link"
+          title="গিটহাব প্রোফাইল ও অন্যান্য প্রজেক্ট দেখুন"
+        >
+          GitHub
+        </a>
+      </footer>
     </div>
   );
 }

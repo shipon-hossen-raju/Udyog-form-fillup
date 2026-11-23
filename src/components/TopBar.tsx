@@ -3,6 +3,7 @@
 import { useRef } from 'react';
 import {
   CheckCircle2,
+  Code2,
   Columns2,
   Download,
   Eye,
@@ -38,6 +39,7 @@ interface TopBarProps {
   draftsCount: number;
   onOpenDrafts: () => void;
   onManualSave: () => void;
+  onOpenDeveloper: () => void;
 }
 
 export function TopBar({
@@ -56,6 +58,7 @@ export function TopBar({
   draftsCount,
   onOpenDrafts,
   onManualSave,
+  onOpenDeveloper,
 }: TopBarProps) {
   const jsonInputRef = useRef<HTMLInputElement>(null);
 
@@ -110,6 +113,16 @@ export function TopBar({
         >
           <Save size={14} aria-hidden="true" />
           <span className="hide-sm">সেভ</span>
+        </button>
+
+        <button
+          type="button"
+          className="btn-developer-badge"
+          onClick={onOpenDeveloper}
+          title="ডেভেলপার পরিচিতি ও পোর্টফোলিও — Shipon Hossain Raju (Software Engineer)"
+        >
+          <Code2 size={14} aria-hidden="true" />
+          <span>ডেভেলপার</span>
         </button>
       </div>
 

@@ -6,23 +6,37 @@ import {
   ArrowLeft,
   Building2,
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  Code2,
   Download,
   Eye,
   FileSpreadsheet,
   FileText,
+  Globe,
   Loader2,
   MapPin,
   Phone,
   Printer,
   RefreshCw,
   Search,
+  Sparkles,
   Trash2,
   User,
   Users,
   Wallet,
   X,
 } from 'lucide-react';
-import { MongoApplicationItem, checkDbHealth, deleteMongoApplication, fetchMongoApplications } from '../utils/api';
+import { DeveloperModal } from './DeveloperModal';
+import {
+  MongoApplicationItem,
+  checkDbHealth,
+  deduplicateMongoApplications,
+  deleteMongoApplication,
+  fetchMongoApplications,
+} from '../utils/api';
 import { formatIsoDateBn, formatTakaBn, parseNumericAmount, toBengaliDigits } from '../data/defaults';
 import { UdyogLogo } from './UdyogLogo';
 
@@ -35,7 +49,13 @@ export function AdminDashboard() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'pdf_generated' | 'printed' | 'draft'>('all');
   const [selectedApp, setSelectedApp] = useState<MongoApplicationItem | null>(null);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [isDeduplicating, setIsDeduplicating] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string>('');
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
+  const [isDevModalOpen, setIsDevModalOpen] = useState<boolean>(false);
 
   const loadData = async () => {
     setIsLoading(true);
@@ -78,12 +98,27 @@ export function AdminDashboard() {
     }, 0);
 
     const districts = new Set<string>();
+    const traffic = {
+      social: 0,
+      search: 0,
+      direct: 0,
+    };
+
     applications.forEach((a) => {
       const d =
         a.formData?.part1?.presentAddress?.district ||
         a.formData?.office?.district ||
         '';
       if (d && d.trim()) districts.add(d.trim());
+
+      const src = (a.formData as any)?._trafficSource?.source;
+      if (src === 'facebook' || src === 'whatsapp' || src === 'youtube' || src === 'social_other') {
+        traffic.social++;
+      } else if (src === 'google') {
+        traffic.search++;
+      } else {
+        traffic.direct++;
+      }
     });
 
     return {
@@ -92,6 +127,7 @@ export function AdminDashboard() {
       printCount,
       sumAmount,
       uniqueDistricts: districts.size,
+      traffic,
     };
   }, [applications]);
 
@@ -125,6 +161,66 @@ export function AdminDashboard() {
       );
     });
   }, [applications, statusFilter, searchQuery]);
+
+  // Reset pagination to page 1 on search or filter change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, statusFilter, pageSize]);
+
+  // Pagination calculations
+  const totalPages = Math.max(1, Math.ceil(filteredApps.length / pageSize));
+  const validCurrentPage = Math.min(Math.max(1, currentPage), totalPages);
+  const startIndex = (validCurrentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, filteredApps.length);
+
+  const paginatedApps = useMemo(() => {
+    return filteredApps.slice(startIndex, endIndex);
+  }, [filteredApps, startIndex, endIndex]);
+
+  const pageNumbers = useMemo(() => {
+    const pages: (number | '...')[] = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      if (validCurrentPage > 3) {
+        pages.push('...');
+      }
+      const start = Math.max(2, validCurrentPage - 1);
+      const end = Math.min(totalPages - 1, validCurrentPage + 1);
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+      if (validCurrentPage < totalPages - 2) {
+        pages.push('...');
+      }
+      pages.push(totalPages);
+    }
+    return pages;
+  }, [totalPages, validCurrentPage]);
+
+  // Handle Deduplication
+  const handleDeduplicate = async () => {
+    if (
+      !window.confirm(
+        'ডাটাবেজে থাকা একই আবেদনকারীর একাধিক ডুপ্লিকেট এন্ট্রি মুছে ফেলে শুধুমাত্র সর্বশেষ/প্রধান এন্ট্রিটি রেখে দিতে চান?'
+      )
+    ) {
+      return;
+    }
+    setIsDeduplicating(true);
+    try {
+      const res = await deduplicateMongoApplications();
+      if (res.success) {
+        announce(res.message);
+        await loadData();
+      } else {
+        announce(`ডুপ্লিকেট রিমুভ ব্যর্থ: ${res.message}`);
+      }
+    } finally {
+      setIsDeduplicating(false);
+    }
+  };
 
   // Handle Delete
   const handleDelete = async (id: string, name: string) => {
@@ -266,6 +362,27 @@ export function AdminDashboard() {
             <span>রিফ্রেশ</span>
           </button>
 
+          <button
+            type="button"
+            className="btn-admin-action btn-admin-cleanup"
+            onClick={handleDeduplicate}
+            disabled={isDeduplicating || isLoading}
+            title="ডাটাবেজ থেকে সকল ডুপ্লিকেট আবেদন এক ক্লিকে মুছে ফেলুন"
+          >
+            <Sparkles size={14} className={isDeduplicating ? 'spin-icon' : ''} />
+            <span>{isDeduplicating ? 'ক্লিন হচ্ছে...' : 'ডুপ্লিকেট রিমুভ'}</span>
+          </button>
+
+          <button
+            type="button"
+            className="btn-admin-action"
+            onClick={() => setIsDevModalOpen(true)}
+            title="ডেভেলপার পরিচিতি ও পোর্টফোলিও — Shipon Hossain Raju (Software Engineer)"
+          >
+            <Code2 size={14} />
+            <span>ডেভেলপার</span>
+          </button>
+
           <Link href="/" className="btn-admin-action btn-admin-primary">
             <ArrowLeft size={15} />
             <span>মূল আবেদন ফরম</span>
@@ -314,6 +431,18 @@ export function AdminDashboard() {
             </div>
             <div className="stat-icon-wrap stat-icon-purple">
               <MapPin size={22} />
+            </div>
+          </div>
+
+          <div className="admin-stat-card">
+            <div className="stat-info">
+              <p>ট্রাফিক উৎস বিশ্লেষণ</p>
+              <h2 className="stat-value" style={{ fontSize: '1rem', marginTop: 8 }}>
+                সোশ্যাল: <strong style={{ color: '#2563eb' }}>{toBengaliDigits(stats.traffic.social)}</strong> | সার্চ: <strong style={{ color: '#059669' }}>{toBengaliDigits(stats.traffic.search)}</strong> | সরাসরি: <strong style={{ color: '#475569' }}>{toBengaliDigits(stats.traffic.direct)}</strong>
+              </h2>
+            </div>
+            <div className="stat-icon-wrap" style={{ background: '#ecfdf5', color: '#059669' }}>
+              <Globe size={22} />
             </div>
           </div>
         </section>
@@ -382,7 +511,8 @@ export function AdminDashboard() {
               </p>
             </div>
           ) : (
-            <div className="admin-table-wrap">
+            <>
+              <div className="admin-table-wrap">
               <table className="admin-table">
                 <thead>
                   <tr>
@@ -398,7 +528,7 @@ export function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredApps.map((app, idx) => {
+                  {paginatedApps.map((app, idx) => {
                     const p1 = app.formData?.part1;
                     const p2 = app.formData?.part2;
                     const p3 = app.formData?.part3;
@@ -418,7 +548,7 @@ export function AdminDashboard() {
                       <tr key={app.id}>
                         <td>
                           <span style={{ fontWeight: 600, color: '#64748b' }}>
-                            {toBengaliDigits(idx + 1)}
+                            {toBengaliDigits(startIndex + idx + 1)}
                           </span>
                         </td>
                         <td>
@@ -492,12 +622,43 @@ export function AdminDashboard() {
                           )}
                         </td>
                         <td style={{ fontSize: '0.78rem', color: '#64748b', whiteSpace: 'nowrap' }}>
-                          {app.createdAt
-                            ? new Date(app.createdAt).toLocaleString('bn-BD', {
-                                dateStyle: 'medium',
-                                timeStyle: 'short',
-                              })
-                            : '—'}
+                          <div>
+                            {app.createdAt
+                              ? new Date(app.createdAt).toLocaleString('bn-BD', {
+                                  dateStyle: 'medium',
+                                  timeStyle: 'short',
+                                })
+                              : '—'}
+                          </div>
+                          {(() => {
+                            const trafficSource = (app.formData as any)?._trafficSource;
+                            if (!trafficSource) return null;
+                            const isGoogle = trafficSource.source === 'google';
+                            const isSocial =
+                              trafficSource.source === 'facebook' ||
+                              trafficSource.source === 'whatsapp' ||
+                              trafficSource.source === 'youtube' ||
+                              trafficSource.source === 'social_other';
+                            return (
+                              <div style={{ marginTop: 4 }}>
+                                <span
+                                  style={{
+                                    fontSize: '0.68rem',
+                                    padding: '2px 6px',
+                                    borderRadius: 4,
+                                    background: isGoogle ? '#ecfdf5' : isSocial ? '#eff6ff' : '#f1f5f9',
+                                    color: isGoogle ? '#065f46' : isSocial ? '#1e40af' : '#475569',
+                                    border: '1px solid #e2e8f0',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: 3,
+                                  }}
+                                >
+                                  {trafficSource.sourceName || 'সরাসরি'}
+                                </span>
+                              </div>
+                            );
+                          })()}
                         </td>
                         <td>
                           <div className="table-actions-cell">
@@ -542,7 +703,107 @@ export function AdminDashboard() {
                 </tbody>
               </table>
             </div>
-          )}
+
+            {/* Pagination Controls */}
+            {filteredApps.length > 0 && (
+              <div className="admin-pagination-bar">
+                <div className="pagination-info-group">
+                  <span className="pagination-info-text">
+                    মোট <strong>{toBengaliDigits(filteredApps.length)}</strong>টি আবেদনের মধ্যে{' '}
+                    <strong>
+                      {toBengaliDigits(startIndex + 1)} – {toBengaliDigits(endIndex)}
+                    </strong>{' '}
+                    দেখানো হচ্ছে
+                  </span>
+                  <div className="pagination-page-size">
+                    <label htmlFor="admin-page-size">প্রতি পৃষ্ঠায়:</label>
+                    <select
+                      id="admin-page-size"
+                      value={pageSize}
+                      onChange={(e) => setPageSize(Number(e.target.value))}
+                      className="page-size-select"
+                    >
+                      <option value={10}>১০ টি</option>
+                      <option value={20}>২০ টি</option>
+                      <option value={50}>৫০ টি</option>
+                      <option value={100}>১০০ টি</option>
+                    </select>
+                  </div>
+                </div>
+
+                {totalPages > 1 && (
+                  <div className="pagination-nav-group">
+                    <button
+                      type="button"
+                      className="btn-page-nav"
+                      onClick={() => setCurrentPage(1)}
+                      disabled={validCurrentPage === 1}
+                      title="প্রথম পৃষ্ঠা"
+                      aria-label="প্রথম পৃষ্ঠা"
+                    >
+                      <ChevronsLeft size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-page-nav"
+                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                      disabled={validCurrentPage === 1}
+                      title="পূর্ববর্তী পৃষ্ঠা"
+                      aria-label="পূর্ববর্তী পৃষ্ঠা"
+                    >
+                      <ChevronLeft size={16} />
+                    </button>
+
+                    <div className="pagination-numbers">
+                      {pageNumbers.map((p, pIdx) => {
+                        if (p === '...') {
+                          return (
+                            <span key={`ellipsis-${pIdx}`} className="pagination-ellipsis">
+                              …
+                            </span>
+                          );
+                        }
+                        const isActive = p === validCurrentPage;
+                        return (
+                          <button
+                            key={`page-${p}`}
+                            type="button"
+                            className={`btn-page-number ${isActive ? 'is-active' : ''}`}
+                            onClick={() => setCurrentPage(p as number)}
+                            aria-current={isActive ? 'page' : undefined}
+                          >
+                            {toBengaliDigits(p)}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <button
+                      type="button"
+                      className="btn-page-nav"
+                      onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={validCurrentPage === totalPages}
+                      title="পরবর্তী পৃষ্ঠা"
+                      aria-label="পরবর্তী পৃষ্ঠা"
+                    >
+                      <ChevronRight size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-page-nav"
+                      onClick={() => setCurrentPage(totalPages)}
+                      disabled={validCurrentPage === totalPages}
+                      title="সর্বশেষ পৃষ্ঠা"
+                      aria-label="সর্বশেষ পৃষ্ঠা"
+                    >
+                      <ChevronsRight size={16} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </>
+        )}
         </div>
       </main>
 
@@ -824,6 +1085,12 @@ export function AdminDashboard() {
           </div>
         </div>
       )}
+
+      {/* Developer Profile Modal */}
+      <DeveloperModal
+        isOpen={isDevModalOpen}
+        onClose={() => setIsDevModalOpen(false)}
+      />
     </div>
   );
 }

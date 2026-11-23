@@ -26,8 +26,14 @@ import { TopBar } from './TopBar';
 import { FormEditor } from './FormEditor';
 import { OfficialPdfPreview } from './OfficialPdfPreview';
 import { DraftsModal } from './DraftsModal';
+import { DeveloperModal } from './DeveloperModal';
 import { exportOfficialFormPdf } from '../utils/pdfExport';
-import { fetchSingleMongoApplication, recordFormSubmission } from '../utils/api';
+import {
+  clearStoredSubmissionId,
+  fetchSingleMongoApplication,
+  recordFormSubmission,
+  setStoredSubmissionId,
+} from '../utils/api';
 
 export function UdyogApp() {
   const [formData, setFormData] = useState<UdyogFormData>(EMPTY_FORM_DATA);
@@ -43,6 +49,7 @@ export function UdyogApp() {
   const [isSaving, setIsSaving] = useState(false);
   const [drafts, setDrafts] = useState<SavedDraft[]>([]);
   const [isDraftsModalOpen, setIsDraftsModalOpen] = useState(false);
+  const [isDevModalOpen, setIsDevModalOpen] = useState(false);
 
   const isHydratedRef = useRef(false);
   const saveTimeoutRef = useRef<number | null>(null);
@@ -83,6 +90,7 @@ export function UdyogApp() {
           fetchSingleMongoApplication(mongoId).then((res) => {
             if (res.success && res.data?.formData) {
               setFormData(res.data.formData);
+              setStoredSubmissionId(mongoId);
               announce(`অ্যাডমিন ডাটাবেজ থেকে "${res.data.applicantName || 'আবেদন'}" লোড করা হয়েছে।`);
             }
           });
@@ -177,6 +185,7 @@ export function UdyogApp() {
     };
     setFormData(blank);
     saveActiveForm(blank);
+    clearStoredSubmissionId();
     setLastSavedTime(new Date().toISOString());
     resetDialogRef.current?.close();
     announce('ফরমের সকল তথ্য মুছে নতুন ফাঁকা ফরম শুরু করা হয়েছে।');
@@ -304,6 +313,7 @@ export function UdyogApp() {
         draftsCount={drafts.length}
         onOpenDrafts={() => setIsDraftsModalOpen(true)}
         onManualSave={handleManualSave}
+        onOpenDeveloper={() => setIsDevModalOpen(true)}
       />
 
       {/* Polite status live region */}
@@ -383,6 +393,12 @@ export function UdyogApp() {
         onDeleteDraft={handleDeleteDraft}
         onDuplicateDraft={handleDuplicateDraft}
         onNotify={announce}
+      />
+
+      {/* Developer Profile Modal */}
+      <DeveloperModal
+        isOpen={isDevModalOpen}
+        onClose={() => setIsDevModalOpen(false)}
       />
 
       {/* Native accessible confirmation dialog */}

@@ -69,6 +69,8 @@ export function DraftsModal({
     setIsSavingNew(false);
   };
 
+  if (!isOpen) return null;
+
   return (
     <dialog
       ref={dialogRef}
