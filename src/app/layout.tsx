@@ -6,7 +6,7 @@ import '@fontsource/noto-sans-bengali/700.css';
 import '../styles/app.css';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://udyog-form-filup.vercel.app'),
+  metadataBase: new URL('https://udyog-form-fillup.vercel.app'),
   title: 'উদ্যোগ (UDYOG) আবেদন ফরম | বাংলাদেশ ব্যাংক ২০ লাখ টাকা লোন ও অনুদান ফর্ম PDF',
   description:
     'বাংলাদেশ ব্যাংকের উদ্যোগ (UDYOG: Upazila-Driven Youth Opportunity for Growth) কর্মসূচির ৭ পৃষ্ঠার অফিসিয়াল আবেদন ফরম পূরণ ও PDF ডাউনলোড করুন। ২০ লক্ষ টাকা পর্যন্ত ৫০% ঋণ ও ৫০% অনুদান সুবিধা।',
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     title: 'উদ্যোগ (UDYOG) আবেদন ফরম — বাংলাদেশ ব্যাংক',
     description:
       'উদ্যোগ (UDYOG: Upazila-Driven Youth Opportunity for Growth) ৭ পৃষ্ঠার অফিসিয়াল A4 আবেদন ফরম পূরণ ও সরাসরি PDF ডাউনলোড করুন।',
-    url: 'https://udyog-form-filup.vercel.app',
+    url: 'https://udyog-form-fillup.vercel.app',
     siteName: 'উদ্যোগ (UDYOG) বাংলাদেশ ব্যাংক',
     locale: 'bn_BD',
     type: 'website',
@@ -58,7 +58,7 @@ const jsonLd = {
   name: 'উদ্যোগ (UDYOG) আবেদন ফরম ও কর্মসূচি',
   alternateName: 'Upazila-Driven Youth Opportunity for Growth (UDYOG)',
   serviceType: 'তরুণ উদ্যোক্তা অনুসন্ধান, চিহ্নিতকরণ ও মিশ্র অর্থায়ন কর্মসূচি',
-  url: 'https://udyog-form-filup.vercel.app',
+  url: 'https://udyog-form-fillup.vercel.app',
   provider: {
     '@type': 'GovernmentOrganization',
     name: 'বাংলাদেশ ব্যাংক (Bangladesh Bank)',
