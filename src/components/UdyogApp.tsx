@@ -70,7 +70,10 @@ export function UdyogApp() {
       }
 
       const savedMode = loadSavedViewMode();
-      if (savedMode) {
+      if (typeof window !== 'undefined' && window.innerWidth <= 880) {
+        // Mobile screens cannot fit 2 columns side-by-side; show clean form editor
+        setViewMode(savedMode === 'preview' ? 'preview' : 'editor');
+      } else if (savedMode) {
         setViewMode(savedMode);
       }
 
