@@ -292,8 +292,9 @@ export function calculateAgeAsOfDeadline(dobIso: string): {
   const dob = new Date(`${dobIso}T00:00:00`);
   if (Number.isNaN(dob.getTime())) return null;
 
-  // Application deadline in official form: 15 October 2026
-  const deadline = new Date('2026-10-15T00:00:00');
+
+  // Application deadline in official form: 30 November 2026
+  const deadline = new Date('2026-11-30T00:00:00');
   let years = deadline.getFullYear() - dob.getFullYear();
   let months = deadline.getMonth() - dob.getMonth();
   let days = deadline.getDate() - dob.getDate();

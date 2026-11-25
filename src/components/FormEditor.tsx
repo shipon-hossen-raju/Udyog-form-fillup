@@ -543,7 +543,7 @@ export function FormEditor({ data, activeStep, onStepChange, onChange }: FormEdi
               <div className="field-group">
                 <label htmlFor="p1-dob" className="field-label">০৫. জন্ম তারিখ</label>
                 <p id="p1-dob-hint" className="field-hint">
-                  ১৫ অক্টোবর ২০২৬ তারিখে বয়স সর্বোচ্চ ২৮ বছর হতে হবে।
+                  ৩০ ডিসেম্বর ২০২৬ তারিখে বয়স সর্বোচ্চ ২৮ বছর হতে হবে।
                 </p>
                 <input
                   id="p1-dob"
@@ -2186,7 +2186,7 @@ export function FormEditor({ data, activeStep, onStepChange, onChange }: FormEdi
       {/* Developer Portfolio Footer Credit */}
       <footer className="developer-footer-credit no-print">
         <span>
-          ডিজাইন ও ডেভেলপমেন্টে: <strong>শিপন হোসাইন রাজু (Shipon Hossain Raju)</strong> — Software Engineer
+          ডিজাইন ও ডেভেলপমেন্টে: Shipon Hossain Raju — Software Engineer
         </span>
         <span className="dev-credit-separator" aria-hidden="true">•</span>
         <a
