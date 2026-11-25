@@ -160,7 +160,7 @@ export const OfficialPdfPreview = forwardRef<HTMLDivElement, OfficialPdfPreviewP
 
             <div className="form-center-heading">
               <div className="form-title-lg">আবেদন ফরম</div>
-              <div className="form-deadline">(আবেদন জমাদানের সর্বশেষ তারিখ ১৫ অক্টোবর ২০২৬)</div>
+              <div className="form-deadline">(আবেদন জমাদানের সর্বশেষ তারিখ ৩০ ডিসেম্বর ২০২৬)</div>
             </div>
 
             {/* Office Use Table */}

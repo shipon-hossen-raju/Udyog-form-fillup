@@ -570,7 +570,7 @@ export function FormEditor({ data, activeStep, onStepChange, onChange }: FormEdi
                   <AlertTriangle size={18} aria-hidden="true" />
                 )}
                 <span>
-                  ১৫ অক্টোবর ২০২৬ তারিখে আপনার হিসাবকৃত বয়স: <strong>{ageInfo.formattedBn}</strong>
+                  ৩০ ডিসেম্বর ২০২৬ তারিখে আপনার হিসাবকৃত বয়স: <strong>{ageInfo.formattedBn}</strong>
                   {ageInfo.isEligible
                     ? ' — যোগ্যতার সীমার (১৮ থেকে সর্বোচ্চ ২৮ বছর) মধ্যে আছে।'
                     : ' — সতর্কতা: নীতিমালা অনুযায়ী বয়স ১৮ থেকে সর্বোচ্চ ২৮ বছরের মধ্যে হতে হবে।'}
